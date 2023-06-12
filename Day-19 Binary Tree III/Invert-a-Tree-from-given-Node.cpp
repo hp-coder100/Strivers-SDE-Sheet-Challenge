@@ -14,60 +14,52 @@ using namespace std;
         }
     };
 
+bool helper(TreeNode<int> *root, TreeNode<int> *leaf, stack<TreeNode<int>*> &st){
+    st.push(root);
 
-bool invert(TreeNode<int> *root,TreeNode<int> *parent, TreeNode<int> *leaf){
-    if(!root) return false;
-
-    if(root->data==leaf->data){
-        leaf->left = parent;
-        return true; 
-    }
-
-    if(invert(root->right, root, leaf)){
-        root->right = NULL;
-        if(root->left){
-            TreeNode<int> *newNode = root->left;
-            root->right = newNode;
+    if(!root->left && !root->right){
+        if(root->data == leaf->data)
+            return true;
+        else{
+            st.pop(); return false;
         }
-        root->left = parent;
-        return true;
     }
-    else if(invert(root->left, root, leaf)){
-        root->left = parent;
-        return true;
+    if(root->left){
+        if(helper(root->left,leaf,st)) return true;
     }
-    
+
+    if(root->right){
+        if(helper(root->right,leaf,st)) return true;
+    }
+
+    st.pop(); 
     return false;
 }
 
-// void setParent(TreeNode<int> *root, TreeNode<int> *parent, unordered_map<TreeNode<int> *, TreeNode<int>*> &mp){
-//     if(!root)return;
-//     mp[root] = parent;
-//     setParent(root->left, root, mp);
-//     setParent(root->right, root, mp);
-// }
 TreeNode<int> * invertBinaryTree(TreeNode<int> *root, TreeNode<int> *leaf)
 {
-	// Write your code here.
-    //bool solve = invert(root, NULL, leaf);
-
-    // unordered_map<TreeNode<int>*, TreeNode<int>*> mp;
-    // setParent(root, NULL, mp);    
-    // TreeNode<int> *temp = leaf;
-
-    // while(temp){
-        
-    //     if(temp->left)
-    //     {
-    //         TreeNode<int> *newNode = temp->left;
-    //         temp->right = newNode;
-    //     }
-    //     temp->left = mp[temp];
-    //     temp = temp->left;
-    // }
+	if(!root) return NULL;
     
-    bool solve = invert(root, NULL, leaf);
-
+    stack<TreeNode<int>*> st;
     
-    return leaf;
+    bool f = helper(root, leaf, st);
+    TreeNode<int> *new_root = st.top();
+    st.pop();
+    TreeNode<int> *par = new_root;
+    
+    while(!st.empty()){
+        auto cur = st.top();
+        st.pop();
+        if(cur->left == par){
+            cur->left=NULL;
+            par->left=cur;
+        }
+        else{
+            cur->right = cur->left;
+            cur->left = NULL;
+            par->left = cur;
+        }
+        par = cur;
+    }
+    return new_root;
 }
